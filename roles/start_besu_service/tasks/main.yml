@@ -3,6 +3,9 @@
 - name: Ensure configuration
   block:
   - fail:
+      msg: You cannot use macOS for this role to run
+    when: ansible_os_family == "Darwin"
+  - fail:
       msg: You must set "is_boot_node" for this role to run
     when: is_boot_node is not defined
   # - fail:

@@ -1,0 +1,20 @@
+---
+- hosts: validaters
+#- hosts: test4node
+#- hosts: test
+  #strategy: debug # 오류에 따라서 자동으로 break 포인트 잡아준다고함??
+  tasks:
+
+  - name: check Ubunto Version
+    shell: lsb_release -cs
+    register: os_version
+    when: true
+
+  # os_version object의 값을 출력
+  - debug: var=os_version.stdout
+
+  roles:
+    - role: make_besu_config
+      is_boot_node: '{{ bootnode }}'
+      besu_user: '{{ besu.user }}'
+      besu_group: '{{ besu.group }}'

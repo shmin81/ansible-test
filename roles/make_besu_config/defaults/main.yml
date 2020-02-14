@@ -2,7 +2,7 @@
 # defaults file for make_besu_config
 # 재정의 할수 있는 기본 변수
 
-#besu_nodes: 4
+besu_nodes: 1
 besu_chain_id: 2020
 besu_ibft_blockperiodseconds: 2
 besu_ibft_epochlength: 30000
@@ -32,7 +32,7 @@ besu_profile_file: "/etc/profile.d/besu-path.sh"
 # New defined
 besu_genesis_path: "{{ besu_config_dir }}/genesis.json"
 besu_consensus: "ibft 2.0"
-besu_config_template: "ibftConfigFile.json.j2"
+besu_genesis_config_template: "ibftConfigFile.json.j2"
 
 # Managed service config
 besu_managed_service: true

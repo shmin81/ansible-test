@@ -1,31 +1,130 @@
 ---
-# tasks file for install_besu
-- name: check besu version
-  command: besu --version
-  register: besu_versions
-  ignore_errors: True
+# tasks file for make_besu_config
+
+- name: Ensure configuration
+  block:
+    # - fail:
+    #     msg: You must set "besu_version" for this role to run
+    #   when: besu_version is not defined
+    - fail:
+        msg: You must set "besu_user" for this role to run
+      when: besu_user is not defined
+    - fail:
+        msg: You must set "besu_group" for this role to run
+      when: besu_group is not defined
+    - fail:
+        msg: You cannot use macOS for this role to run
+      when: ansible_os_family == "Darwin"
+  when: True
+
+- name: check besu
+  command: '{{ besu_current_dir }}/bin/besu --version'
+  register: besu_version_infos
 
 - name: print besu version
-  debug: var=besu_versions.stdout
+  debug: 
+    var: besu_version_infos.stdout
 
-- name: install besu
-  block:
-  - name: download besu
-    apt: name=software-properties-common update_cache=yes 
-
-  - name: Add an Apt signing key, uses whichever key is at the URL
-    apt_key: 
-      url: "{{ openjdk_apt_key_url }}"
-
-  - name: Add APT repository for 'AdoptOpenJDK'
-    shell: |
-      add-apt-repository --yes {{ openjdk_apt_repo }}
-    args:
-      executable: /bin/bash
-
-  - name: install jdk package
-    apt: name={{ openjdk_name }} update_cache=yes 
-
-  environment: "{{ env|d({}) }}"
-  when: besu_versions.rc != 1
+- name: Create configuration directory
+  file:
+    path: "{{ besu_config_dir }}"
+    state: directory
+    owner: "{{ besu_user }}"
+    group: "{{ besu_group }}"
+    recurse: yes
   become: true
+
+- name: Generate genesis config file
+  template:
+    src: "{{ besu_genesis_config_template }}"
+    dest: "{{ besu_config_dir }}/ibftConfigFile.json"
+    owner: "{{ besu_user }}"
+    group: "{{ besu_group }}"
+    mode: 0644
+  become: true
+  register: config_json
+
+- name: make besu genesis and nodekey
+  block:
+    - name: clear old datas
+      file:
+        path: '{{ besu_config_dir }}/node'
+        state: absent
+
+    - name: create new datas
+      command: '{{ besu_current_dir }}/bin/besu operator generate-blockchain-config --config-file={{ besu_config_dir }}/ibftConfigFile.json --to={{ besu_config_dir }}/node --private-key-file-name=key'
+      register: result_infos
+
+    - name: print besu result
+      debug: 
+        var: result_infos
+
+    - name: find node key
+      find:
+        paths: "{{ besu_config_dir }}/node/keys"
+        file_type: file
+        excludes: 
+          - genesis.json
+          - key.pub
+        recurse: yes
+      register: file_infos
+
+    - name: print besu key
+      debug: 
+        var: file_infos.matched
+
+    - name: print besu key
+      debug: 
+        var: file_infos.files[0].path
+      when: file_infos.matched > 0
+
+    - name: copy key
+      copy: 
+        src: '{{ file_infos.files[0].path }}'
+        dest: '{{ besu_config_dir }}/node/node-key'
+        remote_src: yes
+        owner: "{{ besu_user }}"
+        group: "{{ besu_group }}"
+        mode: 0644
+      when: file_infos.matched == 1
+
+  become: true
+  when: config_json is changed
+
+
+# - name: find node key
+#   find:
+#     paths: "{{ besu_config_dir }}/node"
+#     file_type: file
+#     excludes: 
+#       - genesis.json
+#       - key.pub
+#     #use_regex: yes
+#     recurse: yes
+#   register: file_infos
+
+# - name: print besu key
+#   debug: 
+#     var: file_infos
+
+# - name: make besu genesis and nodekey
+#   block:
+#   - name: download besu
+#     apt: name=software-properties-common update_cache=yes 
+
+#   - name: Add an Apt signing key, uses whichever key is at the URL
+#     apt_key: 
+#       url: "{{ openjdk_apt_key_url }}"
+
+#   - name: Add APT repository for 'AdoptOpenJDK'
+#     shell: |
+#       add-apt-repository --yes {{ openjdk_apt_repo }}
+#     args:
+#       executable: /bin/bash
+
+#   - name: install jdk package
+#     apt: name={{ openjdk_name }} update_cache=yes 
+
+#   environment: "{{ env|d({}) }}"
+#   when: besu_versions.rc != 1
+#   become: true
