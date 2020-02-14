@@ -1,0 +1,15 @@
+---
+# tasks file for start_besu_binary
+- name: Reload systemd to reread configs
+  systemd:
+    daemon_reload: yes
+  become: true
+  when: ( besu_systemd_state == "restarted" )
+
+- name: Enable and start Besu service
+  systemd:
+    name: besu
+    state: '{{ besu_systemd_state }}'
+    enabled: true
+  become: true
+  when: ( ansible_os_family != "Darwin" )

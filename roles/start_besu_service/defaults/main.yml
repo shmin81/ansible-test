@@ -1,0 +1,11 @@
+# start_besu_service config
+
+# mandatory inputs
+# is_boot_node: False
+
+# optional
+# boot_node_only: False
+besu_managed_service: True
+besu_systemd_state: 'restarted'
+besu_systemd_dir: /etc/systemd/system
+

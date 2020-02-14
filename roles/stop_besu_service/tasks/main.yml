@@ -1,0 +1,9 @@
+---
+# tasks file for stop_besu_service
+
+- name: Stop Besu systemd service if running
+  service:
+    name: besu
+    state: stopped
+  become: true
+  #ignore_errors: true

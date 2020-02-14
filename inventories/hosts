@@ -1,0 +1,9 @@
+
+[validatars]
+val-01 ansible_host=193.168.100.101 ansible_user=vagrant
+val-02 ansible_host=193.168.100.102 ansible_user=vagrant
+val-03 ansible_host=193.168.100.103 ansible_user=vagrant
+val-04 ansible_host=193.168.100.104 ansible_user=vagrant
+
+[test]
+val-04

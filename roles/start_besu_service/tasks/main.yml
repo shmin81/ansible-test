@@ -1,0 +1,35 @@
+---
+# tasks file for start_besu_service
+- name: Ensure configuration
+  block:
+  - fail:
+      msg: You must set "is_boot_node" for this role to run
+    when: is_boot_node is not defined
+  # - fail:
+  #     msg: You must set "boot_node_only" for this role to run
+  #   when: boot_node_only is not defined
+  
+- name: Starting besu service
+  block:
+    - name: Start besu - boot node
+      include_tasks: "start_service.yml"
+      when: is_boot_node
+
+    - name: Start besu - normal node
+      include_tasks: "start_service.yml"
+      when: not is_boot_node
+  become: true
+  when: besu_managed_service
+
+# - name: Starting besu binary
+#   block:
+#     - name: Start besu - boot node
+#       include_tasks: "start_binary.yml"
+#       when: is_boot_node
+
+#     - name: Start besu - normal node
+#       include_tasks: "start_binary.yml"
+#       when: not is_boot_node
+
+#   become: true
+#   when: not besu_managed_service

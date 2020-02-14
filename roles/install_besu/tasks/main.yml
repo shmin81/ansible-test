@@ -1,0 +1,49 @@
+---
+# tasks file for install_besu
+
+- name: Ensure configuration
+  block:
+    - fail:
+        msg: You must set "besu_version" for this role to run
+      when: besu_version is not defined
+    - fail:
+        msg: You must set "besu_user" for this role to run
+      when: besu_user is not defined
+    - fail:
+        msg: You must set "besu_group" for this role to run
+      when: besu_group is not defined
+    - fail:
+        msg: You cannot use macOS for this role to run
+      when: ansible_os_family == "Darwin"
+  when: True
+
+- name: check besu version
+  shell: '{{ besu_current_dir }}/bin/besu --version'
+  register: besu_version_infos
+  ignore_errors: True
+
+- name: print besu version
+  debug: 
+    var: besu_version_infos
+  when: besu_version_infos.rc != 0
+
+- name: Set updated option
+  set_fact:
+    force_update: "{{ besu_state_updates + ['besu.systemd_file'] }}"
+  when: ( besu_version_infos.rc == 0 ) and
+    ( besu_version_infos.stdout.find(besu_version) == -1 )
+
+- name: Install besu
+  include_tasks: "install.yml"
+  when: force_update or ( besu_version_infos.rc != 0 )
+
+# - name: Get IP address to bind to if not provided
+#   include_tasks: "network.yml"
+#   when: not besu_host_ip
+
+# - name: Create config
+#   include_tasks: "config.yml"
+
+- name: Create Besu service (but not run)
+  include_tasks: "service.yml"
+

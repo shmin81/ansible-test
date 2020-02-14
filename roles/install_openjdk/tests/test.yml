@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - { role: install_openjdk, openjdk_version: 11 }
+    
