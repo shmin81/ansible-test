@@ -3,9 +3,9 @@
 
 - name: Ensure configuration
   block:
-    # - fail:
-    #     msg: You must set "besu_version" for this role to run
-    #   when: besu_version is not defined
+    - fail:
+        msg: You must set "is_boot_node" for this role to run
+      when: is_boot_node is not defined
     - fail:
         msg: You must set "besu_user" for this role to run
       when: besu_user is not defined
@@ -17,8 +17,9 @@
       when: ansible_os_family == "Darwin"
   when: True
 
-- name: check besu
-  command: '{{ besu_current_dir }}/bin/besu --version'
+- name: check besu {{ inventory_hostname }}
+  #command: '{{ besu_current_dir }}/bin/besu --version'
+  command: '{{ besu_exec_binary }} --version'
   register: besu_version_infos
 
 - name: print besu version
@@ -45,51 +46,22 @@
   register: config_json
 
 - name: make besu genesis and nodekey
-  block:
-    - name: clear old datas
-      file:
-        path: '{{ besu_config_dir }}/node'
-        state: absent
+  include: genesis.yml
+  #become: true
+  #when: config_json is changed
+  when: (roll_option == 'all' or roll_option == 'genesis') and
+    (config_json is changed or force == True)   
 
-    - name: create new datas
-      command: '{{ besu_current_dir }}/bin/besu operator generate-blockchain-config --config-file={{ besu_config_dir }}/ibftConfigFile.json --to={{ besu_config_dir }}/node --private-key-file-name=key'
-      register: result_infos
+- name: make besu config
+  include: config.yml
+  #become: true
+  #when: config_json is changed
+  when: (roll_option == 'all' or roll_option == 'config') and
+    (config_json is changed or force == True) 
 
-    - name: print besu result
-      debug: 
-        var: result_infos
 
-    - name: find node key
-      find:
-        paths: "{{ besu_config_dir }}/node/keys"
-        file_type: file
-        excludes: 
-          - genesis.json
-          - key.pub
-        recurse: yes
-      register: file_infos
-
-    - name: print besu key
-      debug: 
-        var: file_infos.matched
-
-    - name: print besu key
-      debug: 
-        var: file_infos.files[0].path
-      when: file_infos.matched > 0
-
-    - name: copy key
-      copy: 
-        src: '{{ file_infos.files[0].path }}'
-        dest: '{{ besu_config_dir }}/node/node-key'
-        remote_src: yes
-        owner: "{{ besu_user }}"
-        group: "{{ besu_group }}"
-        mode: 0644
-      when: file_infos.matched == 1
-
-  become: true
-  when: config_json is changed
+- name: Create Besu service (but not run)
+  include_tasks: "service.yml"
 
 
 # - name: find node key

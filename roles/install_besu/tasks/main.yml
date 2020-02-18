@@ -44,6 +44,6 @@
 # - name: Create config
 #   include_tasks: "config.yml"
 
-- name: Create Besu service (but not run)
-  include_tasks: "service.yml"
+# - name: Create Besu service (but not run)
+#   include_tasks: "service.yml"
 

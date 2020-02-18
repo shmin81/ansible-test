@@ -13,5 +13,6 @@ playbooks/callback_plugins/__pycache__/*.pyc
 playbooks/filter_plugins/__pycache__/*.pyc
 
 # vagrant
-.vagrant/
+.vagrant
+.generated
 ubuntu-bionic-18.04-cloudimg-console.log

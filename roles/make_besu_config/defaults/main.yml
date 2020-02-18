@@ -8,6 +8,13 @@ besu_ibft_blockperiodseconds: 2
 besu_ibft_epochlength: 30000
 besu_ibft_requesttimeoutseconds: 10
 
+# option: all (genesis.json, node private key, besu config), genesis(genesis.json only), config(besu config only)
+roll_option: genesis 
+# option: False (없거나 변경된 경우에만 생성)
+force: yes
+# Option
+#is_boot_node: false
+
 # User and group
 #besu_user: besu
 #besu_group: "{{ besu_user }}"
@@ -16,29 +23,40 @@ besu_ibft_requesttimeoutseconds: 10
 #besu_version: "1.3.8"
 
 # Version to install
-besu_download_url: "https://bintray.com/hyperledger-org/besu-repo/download_file?file_path=besu-{{ besu_version }}.tar.gz"
+#besu_download_url: "https://bintray.com/hyperledger-org/besu-repo/download_file?file_path=besu-{{ besu_version }}.tar.gz"
 
 # Directory paths
 besu_base_dir: "/opt/besu"
-besu_install_dir: "{{ besu_base_dir }}/besu-{{ besu_version }}"
-besu_current_dir: "{{ besu_base_dir }}/current"
-besu_node_private_key_file: ""
+#besu_install_dir: "{{ besu_base_dir }}/besu-{{ besu_version }}"
+#besu_current_dir: "{{ besu_base_dir }}/current"
+besu_exec_binary: "{{ besu_base_dir }}/current/bin/besu"
+#besu_node_private_key_file: ""
 besu_config_dir: "/etc/besu"
 besu_config_template: "config.toml.j2"
-besu_data_dir: "{{ besu_base_dir }}/data"
-besu_log_dir: "/var/log/besu"
-besu_profile_file: "/etc/profile.d/besu-path.sh"
+#besu_data_dir: "{{ besu_base_dir }}/data"
+#besu_log_dir: "/var/log/besu"
+#besu_profile_file: "/etc/profile.d/besu-path.sh" # ??
 
 # New defined
-besu_genesis_path: "{{ besu_config_dir }}/genesis.json"
-besu_consensus: "ibft 2.0"
+besu_temp_dir: "{{ besu_config_dir }}/temp"
+besu_node_dir: "{{ besu_config_dir }}/{{ inventory_hostname }}"
+besu_genesis_path: "{{ besu_node_dir }}/genesis.json"
+#besu_consensus: "ibft 2.0"
 besu_genesis_config_template: "ibftConfigFile.json.j2"
+#besu_boot_enode_path: "./generated/{{ inventory_hostname }}-boot-node-key.pub"
+#besu_static_enode_path: "./generated/{{ inventory_hostname }}-static-node-key.pub"
+besu_boot_enode_post_fix: "-boot-node-key.pub"
+besu_static_enode_post_fix: "-static-node-key.pub"
+
+# Modified
+besu_node_private_key_file: "{{ besu_node_dir }}/key"
+besu_data_dir: "{{ besu_node_dir }}/data"
 
 # Managed service config
-besu_managed_service: true
-besu_systemd_state: restarted
-besu_systemd_template: besu.service.j2
-besu_systemd_dir: /etc/systemd/system
+# besu_managed_service: true
+# besu_systemd_state: restarted
+# besu_systemd_template: besu.service.j2
+# besu_systemd_dir: /etc/systemd/system
 # macOS
 # besu_launchd_template: org.hyperledger.besu.plist.j2
 # besu_launchd_dir: /Library/LaunchAgents
@@ -46,8 +64,9 @@ besu_systemd_dir: /etc/systemd/system
 # Besu config
 besu_host_ip: ""
 besu_default_ip: "127.0.0.1"
-besu_network: mainnet
-besu_sync_mode: FAST
+besu_network: mainnetXXX
+#besu_sync_mode: FAST
+besu_sync_mode: FULL
 besu_log_level: INFO
 besu_p2p_port: 30303
 besu_min_gas: 1000
@@ -63,6 +82,7 @@ besu_graphql_http_enabled: "true"
 besu_graphql_http_host: 0.0.0.0
 besu_graphql_http_port: 8547
 besu_graphql_http_cors_origins: ["all"]
+besu_metrics_enabled: "true"
 besu_metrics_host: 0.0.0.0
 besu_metrics_port: 9545
 besu_bootnodes: []
@@ -71,4 +91,4 @@ besu_cmdline_args: ""
 besu_env_opts: ""
 
 # internal state to maintain idempotency
-besu_state_updates: []
+# besu_state_updates: []

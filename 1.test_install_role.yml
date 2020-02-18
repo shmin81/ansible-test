@@ -1,6 +1,6 @@
 ---
 - hosts: validaters
-#- hosts: test4node
+#- hosts: test2node
 #- hosts: test
   #strategy: debug # 오류에 따라서 자동으로 break 포인트 잡아준다고함??
   tasks:
@@ -20,7 +20,7 @@
     # - role: ansible-role-besu
     #   besu_version: 1.3.8
 
-    # - role: install_besu
-    #   besu_version: '{{ besu.version }}'
-    #   besu_user: '{{ besu.user }}'
-    #   besu_group: '{{ besu.group }}'
+    - role: install_besu
+      besu_version: '{{ besu.version }}'
+      besu_user: '{{ besu.user }}'
+      besu_group: '{{ besu.group }}'

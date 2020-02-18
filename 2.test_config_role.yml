@@ -1,6 +1,6 @@
 ---
 - hosts: validaters
-#- hosts: test4node
+#- hosts: test2node
 #- hosts: test
   #strategy: debug # 오류에 따라서 자동으로 break 포인트 잡아준다고함??
   tasks:
@@ -18,3 +18,5 @@
       is_boot_node: '{{ bootnode }}'
       besu_user: '{{ besu.user }}'
       besu_group: '{{ besu.group }}'
+      roll_option: all #genesis 
+      force: yes

@@ -63,10 +63,10 @@
   become: true
   register: extract_src
 
-- name: Set updated optionally to trigger a systemd restart at the end
-  set_fact:
-    besu_state_updates: "{{ besu_state_updates + ['besu.install_dir'] }}"
-  when: extract_src is changed
+# - name: Set updated optionally to trigger a systemd restart at the end
+#   set_fact:
+#     besu_state_updates: "{{ besu_state_updates + ['besu.install_dir'] }}"
+#   when: extract_src is changed
 
 # will throw error the first time you install since the service isnt present
 - name: Stop Besu systemd service if running
