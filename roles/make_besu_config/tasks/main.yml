@@ -26,6 +26,13 @@
   debug: 
     var: besu_version_infos.stdout
 
+- name: Clear All besu datas (config & database)
+  file:
+    #path: "{{ besu_config_dir }}/{{ inventory_hostname }}/"
+    path: "{{ besu_config_dir }}/"
+    state: directory
+  become: true
+
 - name: Create configuration directory
   file:
     path: "{{ besu_config_dir }}"
@@ -33,6 +40,7 @@
     owner: "{{ besu_user }}"
     group: "{{ besu_group }}"
     recurse: yes
+  when: (roll_option == 'all') and force
   become: true
 
 - name: Generate genesis config file

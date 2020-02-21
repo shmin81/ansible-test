@@ -1,4 +1,18 @@
 ---
+- name: Create log directory
+  file:
+    path: "{{ besu_log_dir }}"
+    state: directory
+    owner: "{{ besu_user }}"
+    group: "{{ besu_group }}"
+  become: true
+
+- name: Setup logrotate
+  template:
+    src: "logrotate/besu"
+    dest: "/etc/logrotate.d/besu"
+  become: true
+  
 - name: Create Besu systemd service
   template:
     src: "{{ besu_systemd_template }}"

@@ -29,7 +29,7 @@
 
 - name: Set updated option
   set_fact:
-    force_update: "{{ besu_state_updates + ['besu.systemd_file'] }}"
+    force_update: True
   when: ( besu_version_infos.rc == 0 ) and
     ( besu_version_infos.stdout.find(besu_version) == -1 )
 

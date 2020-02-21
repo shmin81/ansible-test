@@ -35,19 +35,19 @@
     group: "{{ besu_group }}"
   become: true
 
-- name: Create log directory
-  file:
-    path: "{{ besu_log_dir }}"
-    state: directory
-    owner: "{{ besu_user }}"
-    group: "{{ besu_group }}"
-  become: true
+# - name: Create log directory
+#   file:
+#     path: "{{ besu_log_dir }}"
+#     state: directory
+#     owner: "{{ besu_user }}"
+#     group: "{{ besu_group }}"
+#   become: true
 
-- name: Setup logrotate
-  template:
-    src: "logrotate/besu"
-    dest: "/etc/logrotate.d/besu"
-  become: true
+# - name: Setup logrotate
+#   template:
+#     src: "logrotate/besu"
+#     dest: "/etc/logrotate.d/besu"
+#   become: true
 
 - name: Extract Besu source to install directory
   unarchive:
@@ -69,15 +69,15 @@
 #   when: extract_src is changed
 
 # will throw error the first time you install since the service isnt present
-- name: Stop Besu systemd service if running
-  service:
-    name: besu
-    state: stopped
-  # when: ( extract_src is changed ) and
-  #   ( besu_managed_service ) and
-  #   ( ansible_os_family != "Darwin" )
-  become: true
-  ignore_errors: true
+# - name: Stop Besu systemd service if running
+#   service:
+#     name: besu
+#     state: stopped
+#   # when: ( extract_src is changed ) and
+#   #   ( besu_managed_service ) and
+#   #   ( ansible_os_family != "Darwin" )
+#   become: true
+#   ignore_errors: true
 
 - name: Create a symlink to current
   file:

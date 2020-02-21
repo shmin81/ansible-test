@@ -1,9 +1,12 @@
 ---
 # vars file for install_jdk
 # openjdk.version 의 형식으로 사용하려 했으나 에러 발생함.
-#openjdk_version: 11
+#min_openjdk_version: 11
+max_openjdk_version: 13
+openjdk_version: 11
 openjdk_name: "adoptopenjdk-{{ openjdk_version }}-hotspot"
 openjdk_name_comp: "AdoptOpenJDK"
 openjdk_version_comp: "openjdk {{ openjdk_version }}."
 openjdk_apt_key_url: "https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public"
 openjdk_apt_repo: "https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/"
+need_force_update: True

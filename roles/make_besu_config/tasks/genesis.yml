@@ -14,9 +14,9 @@
   become: true
   when: true
 
-- name: print besu result
+- name: print besu operator generate-blockchain-config result
   debug: 
-    var: result_infos
+    var: result_infos.stdout_lines
 
 - name: Create besu configuration directory
   file:
@@ -41,14 +41,23 @@
       recurse: yes
     register: file_infos
 
-  - name: print besu key
+  - name: created besu files
     debug: 
       var: file_infos.matched
 
-  - name: print besu key
-    debug: 
-      var: file_infos.files
-    when: file_infos.matched > 0
+  # 왜 안됨 ??? 
+  # - name: print besu files
+  #   debug: 
+  #     var: '{{ fileItem.path }}'
+  #   with_items: "{{ file_infos['files'] }}"  
+  #   loop_control: 
+  #     loop_var: fileItem
+  #   when: file_infos.matched > 0
+
+  # - name: print besu key
+  #   debug: 
+  #     var: file_infos.files
+  #   when: file_infos.matched > 0
 
 # - name: copy key
 #   copy: 
@@ -60,7 +69,7 @@
 #     mode: 0644
 #   when: file_infos.matched == 1
 
-  - name: copy files
+  - name: copy besu files
     copy: 
       src: '{{ fileItem.path }}'
       dest: '{{ besu_node_dir }}/'
@@ -92,11 +101,11 @@
         register: enode_contents
       - name: set bootnode enode
         set_fact: 
-          enode: 'enode://{{ enode_contents.stdout }}@{{ ansible_host }}:{{ besu_p2p_port }}'
+          enode_self: 'enode://{{ enode_contents.stdout }}@{{ ansible_host }}:{{ besu_p2p_port }}'
           cacheable: yes
       - name: save bootnode enode
         shell: |
-          eNodeStr={{ enode }}
+          eNodeStr={{ enode_self }}
           echo $eNodeStr > {{ besu_node_dir }}/enode.txt
         args:
           executable: /bin/bash
@@ -104,6 +113,39 @@
 
     become: true
     when: True
+
+  # - name: "Combine specific with default variables"
+  #   set_fact: 
+  #     all_enodes: '{{ all_enodes }} | combine( {{hostvars[{{ item }}].enode_self }} )'
+  #   with_items: '{{ groups.validaters }}'
+
+  # - name: Merge All Node Set
+  #   set_fact:
+  #     all_enodes: "{{ hostvars|json_query('*.enode_self') }}"
+
+  - name: save all enodes
+    shell: |
+      {% for host in groups.validaters %}
+      eNodeStr={{ hostvars[host].enode_self }}
+      echo $eNodeStr
+      {% endfor %}
+    args:
+      executable: /bin/bash
+    register: save_enode_contents
+
+  - debug: var=save_enode_contents
+
+  - name: Set All Nodes
+    set_fact:
+      all_enodes: '{{ save_enode_contents.stdout_lines }}'
+
+  - debug: var=all_enodes
+
+  - name: Set Other Node Set - exclude myself
+    set_fact:
+      other_enodes: '{{ all_enodes | difference(enode_self) }}'
+    
+  - debug: var=other_enodes
 
   - name: Copy remote enode.txt file (boot node)
     fetch:
@@ -123,10 +165,10 @@
     register: fetch_result
     when: not is_boot_node
 
-  - name: copy result
-    debug: 
-      var: fetch_result
-    when: True
+  # - name: copy result
+  #   debug: 
+  #     var: fetch_result
+  #   when: True
 
   when: roll_option == 'all'
   become: true
@@ -152,9 +194,9 @@
         patterns: '*{{ besu_boot_enode_post_fix }}'
       register: boot_file_info
 
-    - name: test debug 1
-      debug:
-        var: boot_file_info
+    # - name: test debug 1
+    #   debug:
+    #     var: boot_file_info
 
     - name: read key.pub
       command: 'cat {{ boot_file_info.files[0].path }}'

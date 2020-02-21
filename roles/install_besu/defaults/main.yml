@@ -21,14 +21,14 @@ besu_current_dir: "{{ besu_base_dir }}/current"
 #besu_config_dir: "/etc/besu"
 #besu_config_template: "config.toml.j2"
 #besu_data_dir: "{{ besu_base_dir }}/data"
-besu_log_dir: "/var/log/besu"
+#besu_log_dir: "/var/log/besu"
 #besu_profile_file: "/etc/profile.d/besu-path.sh"
 
 # Managed service config
-besu_managed_service: true
-besu_systemd_state: restarted
-besu_systemd_template: besu.service.j2
-besu_systemd_dir: /etc/systemd/system
+# besu_managed_service: true
+# besu_systemd_state: restarted
+# besu_systemd_template: besu.service.j2
+# besu_systemd_dir: /etc/systemd/system
 # macOS
 # besu_launchd_template: org.hyperledger.besu.plist.j2
 # besu_launchd_dir: /Library/LaunchAgents

@@ -4,7 +4,7 @@
   systemd:
     daemon_reload: yes
   become: true
-  when: ( besu_systemd_state == "restarted" )
+  when: besu_systemd_state == "restarted"
 
 - name: Enable and start Besu service
   systemd:

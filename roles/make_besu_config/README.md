@@ -1,5 +1,5 @@
-Install Besu
-============
+Make Besu Config
+================
 
 A brief description of the role goes here.
 
@@ -11,7 +11,30 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+필수 항목
+
+- is_boot_node: True/False
+- besu_user: besu
+- besu_group: appuser
+
+
+선택 항목
+
+- 실행 옵션
+  - roll_option: all (default)
+    - all : genesis.json, node private key, besu config
+    - genesis : genesis.json only
+    - config : besu config only
+  - force: false (default)
+    - true : 원래의 데이터(Ledger DB 파일 포함)를 삭제 후, 실행
+    - false : 새로 생성되거나 값이 변경되었을 경우에만 실행됨 (DB 데이터 유지)
+
+- IBFT 옵션
+  - besu_chain_id: 2020
+  - besu_ibft_blockperiodseconds: 2
+  - besu_ibft_epochlength: 30000
+  - besu_ibft_requesttimeoutseconds: 10
+
 
 Dependencies
 ------------
