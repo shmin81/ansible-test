@@ -1,0 +1,6 @@
+---
+# handlers file for install_besu
+- name: Set restart besu
+  set_fact:
+    besu_state_updates: True
+

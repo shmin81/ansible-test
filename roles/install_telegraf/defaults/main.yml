@@ -1,0 +1,82 @@
+---
+# defaults file for install_telegraf
+
+
+# Channel of Telegraf to install
+telegraf_version: stable
+
+# Telegraf repository
+telegraf_repo_url: 'https://repos.influxdata.com'
+telegraf_repo_key: '{{ telegraf_repo_url }}/influxdb.key'
+
+# Location of config files
+telegraf_configuration_dir: /etc/telegraf
+
+common:
+  identity:
+    system: 'SK Coin'
+    env: product
+    isProduction: true  # NEVER set to false for production systems after GO Live!
+  apt:
+    cacheValidTime: 3600
+
+config:
+  global_tags:
+    zmon_account_id: blockchain
+  agent:
+    interval: '10s'
+    debug: false
+    quiet: false
+    logfile: '/var/log/telegraf/telegraf.log'
+  outputs:
+    kafka:
+      brokers: ["169.56.117.70:9092"]
+      routing_tag: "zmon_account_id"
+      topic_suffix:
+        keys: ["zmon_account_id"]
+  inputs:
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cpu
+    cpu:
+      enabled: true
+      percpu: false # default : false
+      collect_cpu_time: false
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/disk
+    # Listing all filesystems : 'df -ahT'
+    disk:
+      ignore_fs: ["tmpfs", "devtmpfs", "devfs", "overlay", "aufs", "squashfs"]
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/diskio
+    # https://www.kernel.org/doc/html/v4.19/admin-guide/devices.html
+    # Listing block devices : 'lsblk'
+    diskio:
+      devices: ["hd*", "sd*", "xvd*"]
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/kernel
+    kernel:
+      fieldpass: ["boot_time", "context_switches", "interrupts", "processes_forked", "entropy_avail"]
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/mem
+    mem:
+      fieldpass: ["available", "free", "total", "used", "available_percent", "used_percent"]
+    # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/net/NET_README.md  
+    net:
+      interfaces: ["eth*", "enp0s*", "lo"]
+      fieldpass: ["bytes_sent", "bytes_recv", "err_in", "err_out", "drop_in", "drop_out"]
+      ignore_protocol_stats: true
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/processes
+    processes:
+      enabled: false  
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/procstat  
+    procstat:
+      pattern: '^(haproxy|/opt/ripple/bin/ripple|/opt/moca/bin/ripple)'
+      fieldpass: ["cpu_usage", "involuntary_context_switches", "memory_rss", "memory_vms", "nice_priority", "num_fds", "num_threads", "voluntary_context_switches"]
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/swap
+    swap:
+      enabled: false
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/system
+    system:
+      fieldpass: ["load1", "load15", "load5", "n_users", "n_cpus"]
+    # https://github.com/influxdata/telegraf/tree/master/plugins/inputs/haproxy
+    # https://cbonte.github.io/haproxy-dconv/1.8/management.html#9.1
+    #   pxname svname qcur qmax scur smax slim stot bin bout dreq dresp ereq econ eresp 
+    #   wretr status ..
+    haproxy:
+      keep_field_names: true
+      fieldpass: ["pxname", "scur", "slim", "ereq", "hrsp_1xx", "hrsp_2xx", "hrsp_3xx", "hrsp_4xx", "hrsp_5xx"] 

@@ -1,0 +1,21 @@
+[Unit]
+Description=Besu Enterprise Ethereum java client
+After=syslog.target network.target
+
+[Service]
+User={{ besu_user }}
+Group={{ besu_group }}
+Environment=HOME=/home/{{ besu_user }}
+Environment=BESU_OPTS={{ besu_env_opts }}
+Type=simple
+{% if besu_cmdline_args %}
+ExecStart=/bin/sh -c "{{ besu_exec_binary }} --config-file={{ besu_node_dir }}/config.toml {{ besu_cmdline_args }} >> {{besu_log_dir}}/besu.log 2>&1"
+{% else %}
+ExecStart=/bin/sh -c "{{ besu_exec_binary }} --config-file={{ besu_node_dir }}/config.toml >> {{besu_log_dir}}/besu.log 2>&1"
+{% endif %}
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

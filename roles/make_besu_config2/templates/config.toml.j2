@@ -1,0 +1,102 @@
+# data
+data-path="{{besu_data_dir}}"
+logging="{{besu_log_level}}"
+
+# private_key
+{% if besu_node_private_key_file != "" %}
+node-private-key-file="{{besu_node_private_key_file}}"
+{% endif %}
+
+genesis-file="{{ besu_genesis_path }}"
+
+min-gas-price={{ besu_min_gas }}
+sync-mode="{{besu_sync_mode}}"
+host-whitelist=[{{besu_host_whitelist|map('to_json')|join(',')}}]
+
+{% if besu_identity is defined %}
+# identity
+identity="{{ besu_identity }}"
+{% endif %}
+
+# p2p
+{% if besu_host_ip != "" %}
+p2p-host="{{besu_host_ip}}"
+{% endif %}
+p2p-port={{besu_p2p_port}}
+
+# rpc
+{% if besu_rpc_http_enabled|bool == True %}
+rpc-http-enabled={{besu_rpc_http_enabled}}
+rpc-http-host="{{besu_rpc_http_host}}"
+rpc-http-port={{besu_rpc_http_port}}
+rpc-http-api=[{{besu_rpc_http_api|map('to_json')|join(',')}}]
+rpc-http-cors-origins=[{{besu_rpc_http_cors_origins|map('to_json')|join(',')}}]
+{% endif %}
+
+# ws
+{% if besu_rpc_ws_enabled|bool == True %}
+rpc-ws-enabled={{besu_rpc_ws_enabled}}
+rpc-ws-host="{{besu_rpc_ws_host}}"
+rpc-ws-port={{besu_rpc_ws_port}}
+{% endif %}
+
+# graphql
+{% if besu_graphql_http_enabled|bool == True %}
+graphql-http-enabled={{besu_graphql_http_enabled}}
+graphql-http-host="{{besu_graphql_http_host}}"
+graphql-http-port={{besu_graphql_http_port}}
+graphql-http-cors-origins=[{{besu_graphql_http_cors_origins|map('to_json')|join(',')}}]
+{% endif %}
+
+# metrics
+{% if besu_metrics_enabled|bool == True %}
+metrics-enabled={{besu_metrics_enabled}}
+metrics-host="{{besu_metrics_host}}"
+metrics-port={{besu_metrics_port}}
+{% endif %}
+
+{% if besu_permissions_accounts_config_file is defined %}
+# local account permissions
+permissions-accounts-config-file-enabled=true
+permissions-accounts-config-file="{{ besu_permissions_accounts_config_file }}"
+{% endif %}
+
+{% if besu_permissions_nodes_config_file is defined %}
+# local node permissions
+permissions-nodes-config-file-enabled=true
+permissions-nodes-config-file="{{ besu_permissions_nodes_config_file }}"
+{% endif %}
+
+{% if besu_permissions_accounts_contract_address is defined %}
+# onchain account permissions
+permissions-accounts-contract-enabled=true
+permissions-accounts-contract-address="{{ besu_permissions_accounts_contract_address }}"
+{% endif %}
+
+{% if besu_permissions_nodes_contract_address is defined %}
+# onchain node permissions
+permissions-nodes-contract-enabled=true
+permissions-nodes-contract-address="{{ besu_permissions_nodes_contract_address }}"
+{% endif %}
+
+{% if besu_bootnodes|length > 0 %}
+# bootnodes
+bootnodes=[ "{{besu_bootnodes}}" ]
+{% endif %}
+
+
+# for test  
+# staticnodes_Test=[ 
+{% for host in groups.validaters %}
+{% if hostvars[host].enode_self != enode_self %}
+#  "{{ hostvars[host].enode_self }}",
+{% endif %}
+{% endfor %}
+# ]
+
+{% if orion_version is defined %}
+# Orion
+privacy-enabled=true
+privacy-url="http://127.0.0.1:8888"
+privacy-public-key-file="{{ orion_config_dir }}/{{ orion_key_name }}.pub"
+{% endif %}

@@ -1,0 +1,126 @@
+#jinja2:line_statement_prefix: '%', trim_blocks: False, lstrip_blocks: False, keep_trailing_newline: True
+
+{#- References
+
+  https://github.com/influxdata/telegraf/blob/master/etc/telegraf.conf
+  https://github.com/influxdata/telegraf/blob/master/docs/CONFIGURATION.md
+-#}
+
+{#- Conventions
+  tags for host(machine, virtual-machine) : system, env, host
+  tags for service : system, env, host, service_type, service
+-#}
+
+{#- @TODO
+  Upgrade Telegraf version
+  Add procstat_looup with 'systemd_unit' ~= rippled@* | haproxy@* | filebeat
+#}
+
+{%- set inputs = config.inputs -%}
+{%- set outputs = config.outputs -%}
+[global_tags]
+  zmon_account_id = "{{ config.global_tags.zmon_account_id }}"
+  system = "{{ common.identity.system|d('orion')|lower|replace(" ", "") }}"
+  env = "{{ common.identity.env }}"
+
+[agent]
+  interval = "{{ config.agent.interval|d('10s') }}"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = ""
+  logfile = "{{ config.agent.logfile }}"
+  debug = {{ config.agent.debug|d(false)|lower }}
+  quiet = {{ config.agent.quiet|d(false)|lower }}
+  hostname = ""
+  omit_hostname = false
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/outputs/kafka -#}
+{% if outputs.kafka|d({}) and outputs.kafka.enabled|d(true) %}
+[[outputs.kafka]]
+  brokers = ["{{ config.outputs.kafka.brokers|join('\",\"') }}"]
+  topic = "telegraf"
+  routing_tag = "{{ config.outputs.kafka.routing_tag }}"
+  compression_codec = 0
+  required_acks = -1
+  max_retry = 3
+  data_format = "influx"
+
+  [outputs.kafka.topic_suffix]
+    method = "tags"
+    keys = ["{{ config.outputs.kafka.topic_suffix['keys']|join('\",\"') }}"]
+    separator = "__"
+{% endif -%}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/outputs/socket_writer -#}
+{% if outputs.socket_writer|d({}) and outputs.socket_writer.enabled|d(true) %}
+[[outputs.socket_writer]]
+  address = "{{ outputs.socket_writer.address }}"
+  data_format = "{{ outputs.socket_writer.data_format }}"
+{% endif -%}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/cpu #}
+[[inputs.cpu]]
+  percpu = {{ inputs.cpu.percpu|d(false)|lower }}
+  totalcpu = true
+  collect_cpu_time = {{ inputs.cpu.collect_cpu_time|d(false)|lower }}
+  report_active = false
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/disk -#}
+[[inputs.disk]]
+  {% if inputs.disk.ignore_fs is defined %}ignore_fs = {{ inputs.disk.ignore_fs|to_json }}{% endif %}
+
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/diskio -#}
+[[inputs.diskio]]
+  {% if inputs.diskio.devices is defined %}devices = {{ inputs.diskio.devices|to_json }}{% endif %}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/kernel -#}
+[[inputs.kernel]]
+  {% if inputs.kernel.fieldpass is defined %}fieldpass = {{ inputs.kernel.fieldpass|to_json }}{% endif %}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/mem -#}
+[[inputs.mem]]
+  {% if inputs.mem.fieldpass is defined %}fieldpass = {{ inputs.mem.fieldpass|to_json }}{% endif %}
+
+{# https://github.com/influxdata/telegraf/blob/master/plugins/inputs/net/NET_README.md -#}
+[[inputs.net]]
+  ignore_protocol_stats = {{ inputs.net.ignore_protocol_stats|d(true)|lower }}
+  {% if inputs.net.interfaces is defined %}interfaces = {{ inputs.net.interfaces|to_json }}{% endif %}
+  {% if inputs.net.fieldpass is defined %}fieldpass = {{ inputs.net.fieldpass|to_json }}{% endif %}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/processes -#}
+# [[inputs.processes]]
+
+{# @TODO Remove unnecessary fields. 'cause 'procstat' has lots of fields -#}
+{#- https://github.com/influxdata/telegraf/tree/master/plugins/inputs/procstat -#}
+{#- http://man7.org/linux/man-pages/man5/proc.5.html -#}
+[[inputs.procstat]]
+  pattern = "{{ inputs.procstat.pattern|d('ripple') }}"
+  pid_tag = true
+  pid_finder = "pgrep"
+  {% if inputs.procstat.fieldpass is defined %}fieldpass = {{ inputs.procstat.fieldpass|to_json }}{% endif %}
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/swap -#}
+# [[inputs.swap]]
+
+{# https://github.com/influxdata/telegraf/tree/master/plugins/inputs/system -#}
+[[inputs.system]]
+  {% if inputs.system.fieldpass is defined %}fieldpass = {{ inputs.system.fieldpass|to_json }}{% endif %}
+
+
+
+
+
+{% if inputs.socket_listener is defined %}
+[[inputs.socket_listener]]
+  service_address = "{{ inputs.socket_listener.service_address }}"
+  max_connections = {{ inputs.socket_listener.max_connections }}
+  data_format = "{{ inputs.socket_listener.data_format }}"
+{% endif -%}
+
+
+

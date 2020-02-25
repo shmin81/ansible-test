@@ -1,0 +1,84 @@
+---
+# tasks file for install_telegraf
+
+
+- name: Install any necessary dependencies
+  apt:
+    name:
+      - python-pip
+      - apt-transport-https
+    state: present
+    update_cache: yes
+  register: tempmsg
+  become: true
+  when: true
+
+- name: result view 1
+  debug:
+    var: tempmsg
+
+# - name: Upgrade pip
+#   pip:
+#     name: pip
+#     state: present # latest | present | ...
+#   register: tempmsg
+#   become: true
+#   when: true
+
+# - name: result view 2
+#   debug:
+#     var: tempmsg
+
+# - name: Upgrade pip
+#   pip:
+#     name: jmespath
+#       # - pexpect
+#       # - pyOpenSSL
+#       # - jmespath
+#     state: present # latest | present | ...
+#   register: tempmsg
+#   become: true
+#   when: true
+
+# - name: result view 3
+#   debug:
+#     var: tempmsg
+
+- name: Import InfluxData GPG signing key
+  apt_key:
+    url: '{{ telegraf_repo_key }}'
+    state: present
+  become: true
+  when: true
+
+- name: Add InfluxData repository
+  apt_repository:
+    repo: 'deb {{ telegraf_repo_url }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ telegraf_version }}'
+    state: present
+  become: true
+  when: true
+
+- name: Install Telegraf
+  apt:
+    name: telegraf
+    state: latest
+    update_cache: yes
+  become: true
+  when: true
+
+- name: Generate Telegraf configuration(telegraf.conf) from template
+  template:
+    src: "telegraf.conf.j2"
+    dest: "/etc/telegraf/telegraf.conf"
+    newline_sequence: '\n'
+    backup: true
+    force: true # replace the remote file when contents are different than the source, which is opposite to intuitive exepectation
+    mode: 0644
+    validate: telegraf --config %s --config-directory /etc/telegraf/telegraf.d/ --test
+  become: true
+  register: generate_telegraf_conf
+  when: true
+
+- name: result view
+  debug:
+    var: generate_telegraf_conf
