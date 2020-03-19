@@ -22,7 +22,7 @@
 
 - name: Remove install directory
   file:
-    path: "{{ besu_install_dir }}"
+    path: "{{ besu_install_dir }}/"
     state: absent
   become: true
   when: force_update

@@ -25,7 +25,7 @@
 - name: print besu version
   debug: 
     var: besu_version_infos
-  when: besu_version_infos.rc != 0
+  when: besu_version_infos.rc == 0
 
 - name: Set updated option
   set_fact:

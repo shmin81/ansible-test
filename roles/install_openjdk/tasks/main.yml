@@ -4,11 +4,14 @@
   block:
   - fail:
       msg: You must set "openjdk_version" for this role to run
-    when: openjdk_version is not defined
+    when: openjdk.version is not defined
+  - fail:
+      msg: You must set "openjdk_version" for this role to run
+    when: openjdk.version is not defined
   - name: check input openjdk_version 
     fail:
       msg: 'Wrong range "openjdk_version": {{ openjdk_version }}'
-    when: ( openjdk_version|int < 11 ) or ( openjdk_version|int > max_openjdk_version|int )
+    when: ( openjdk_version|int < openjdk_min_version ) or ( openjdk_version|int > openjdk_max_version|int )
 
 - name: Get installed Java version
   command: java --version
@@ -45,7 +48,7 @@
       #   msg: 'Wrong JDK Version (installed version: {{ java_version_infos.stdout }})'
       # when: java_version_infos.stdout.find(openjdk_version_comp) == -1
       set_fact:
-        need_force_update: False
+        force_update: False
       when: True
   when: java_version_infos.rc == 0
 
@@ -59,7 +62,7 @@
   - name: Add an apt signing key, uses whichever key is at the URL
     apt_key: 
       url: "{{ openjdk_apt_key_url }}"
-    when: need_force_update == True
+    when: force_update
     # 왜 에러발생??
     # - name: Add APT repository for 'AdoptOpenJDK'
     #   apt_repository:
@@ -71,12 +74,13 @@
       add-apt-repository --yes {{ openjdk_apt_repo }}
     args:
       executable: /bin/bash
-    when: need_force_update == True
+    when: force_update
 
   - name: Install jdk package
     apt: 
       name: [ software-properties-common, '{{ openjdk_name }}' ]
       update_cache: yes 
+      cache_valid_time: '{{ apt.cache_update_time }}'
 
   environment: "{{ env|d({}) }}"
   when: True # java_version_infos.rc != 0
