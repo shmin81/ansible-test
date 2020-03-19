@@ -1,5 +1,5 @@
 ---
-- hosts: validaters
+- hosts: validators
 #- hosts: test2node
 #- hosts: test
   #strategy: debug # 오류에 따라서 자동으로 break 포인트 잡아준다고함??
@@ -14,10 +14,23 @@
   - debug: var=os_version.stdout
 
   roles:
-    - role: make_besu_config
+    # - role: make_besu_config
+    #   is_boot_node: '{{ bootnode }}'
+    #   besu_user: '{{ besu.user }}'
+    #   besu_group: '{{ besu.group }}'
+    #   roll_option: all #type: all, genesis, config
+    #   force: yes  # default: False
+      
+    - role: besu_config_pre_process
+      besu_nodes: '{{ besu.num_of_nodes }}'
+      mgnt_node_name: '{{ besu.key_mgnt_node }}'
+      besu_user: '{{ besu.user }}'
+      besu_group: '{{ besu.group }}'
+      # force_update: yes
+
+    - role: besu_config
       is_boot_node: '{{ bootnode }}'
       besu_user: '{{ besu.user }}'
       besu_group: '{{ besu.group }}'
-      roll_option: all #type: all, genesis, config
-      force: yes  # default: False
-      
+      # force_update: yes
+
